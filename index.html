@@ -1,684 +1,575 @@
 <!DOCTYPE html>
-<html lang="uk" class="dark">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚡ Кібер-Лабораторія Python | Практичний Тренажер</title>
+    <title>Кібер-Лабораторія Python | Практичні місії</title>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Pyodide CDN for client-side Python execution -->
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
-    <!-- Canvas Confetti for celebrations -->
+    <!-- Pyodide (Python 3.11 in Browser) -->
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+    <!-- Canvas Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Monaco Editor CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        cat: {
-                            base: '#1e1e2e',
-                            surface: '#181825',
-                            overlay: '#313244',
-                            text: '#cdd6f4',
-                            subtext: '#a6adc8',
-                            green: '#a6e3a1',
-                            blue: '#89b4fa',
-                            red: '#f38ba8',
-                            peach: '#fab387',
-                            yellow: '#f9e2af',
-                            mauve: '#cba6f7',
-                            pink: '#f5c2e7'
-                        }
+                        darkBg: '#0f172a',
+                        cardBg: '#1e293b',
+                        accentBlue: '#38bdf8',
+                        accentGreen: '#4ade80',
+                        accentYellow: '#facc15',
+                        accentPurple: '#c084fc',
+                        codeBg: '#090d16'
                     },
                     fontFamily: {
-                        mono: ['Fira Code', 'Cascadia Code', 'Consolas', 'monospace']
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
                     }
                 }
             }
         }
     </script>
-
     <style>
-        /* Custom scrollbars */
-        ::-webkit-scrollbar {
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+        }
+        .scrollbar-custom::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        ::-webkit-scrollbar-track {
-            background: #181825;
+        .scrollbar-custom::-webkit-scrollbar-track {
+            background: #0f172a;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #313244;
+        .scrollbar-custom::-webkit-scrollbar-thumb {
+            background: #334155;
             border-radius: 4px;
         }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #45475a;
-        }
-
-        .editor-textarea {
-            tab-size: 4;
-            -moz-tab-size: 4;
-            resize: none;
-            outline: none;
-            white-space: pre;
-            word-break: normal;
-        }
-
-        .pulse-glow {
-            box-shadow: 0 0 15px rgba(166, 227, 161, 0.2);
+        .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+            background: #475569;
         }
     </style>
 </head>
-<body class="bg-cat-base text-cat-text font-sans antialiased min-h-screen flex flex-col justify-between">
+<body class="h-screen flex flex-col font-sans overflow-hidden">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-cat-surface border-b border-cat-overlay px-4 py-3 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-50">
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex items-center justify-between shrink-0">
         <div class="flex items-center space-x-3">
             <span class="text-3xl">🚀</span>
             <div>
-                <h1 class="font-bold text-lg text-cat-blue flex items-center gap-2">
-                    Кібер-Лабораторія Python 
-                    <span class="text-xs bg-cat-mauve/20 text-cat-mauve px-2 py-0.5 rounded-full border border-cat-mauve/30">НУШ 9-10 клас</span>
+                <h1 class="text-xl font-bold bg-gradient-to-r from-cyan-400 to-emerald-400 bg-clip-text text-transparent">
+                    Кібер-Лабораторія Python
                 </h1>
-                <p class="text-xs text-cat-subtext">Інтерактивна перевірка цифрових компетентностей</p>
+                <p class="text-xs text-slate-400">Інтерактивний тренажер цифрових компетентностей</p>
             </div>
         </div>
 
-        <!-- Global Progress & Stats -->
-        <div class="flex items-center gap-6 text-sm">
-            <div class="flex items-center gap-2">
-                <span>Прогрес:</span>
-                <div class="w-32 bg-cat-overlay rounded-full h-3 overflow-hidden border border-cat-overlay">
-                    <div id="progress-bar" class="bg-gradient-to-r from-cat-blue to-cat-green h-full w-0 transition-all duration-500"></div>
+        <!-- Progress Bar & Score -->
+        <div class="flex items-center space-x-6">
+            <div class="flex items-center space-x-3">
+                <span class="text-sm font-medium text-slate-400">Прогрес:</span>
+                <div class="w-36 bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                    <div id="progress-bar" class="bg-gradient-to-r from-cyan-500 to-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
-                <span id="progress-text" class="font-mono text-xs font-bold text-cat-green">0%</span>
+                <span id="progress-text" class="text-xs font-bold text-cyan-400">0%</span>
             </div>
-            <div class="bg-cat-overlay/60 px-3 py-1.5 rounded-lg flex items-center gap-2 border border-cat-overlay">
-                <span>🏆 Бали:</span>
-                <span id="score-counter" class="font-mono font-bold text-cat-yellow">0 / 500</span>
+
+            <div class="flex items-center space-x-2 bg-slate-800 border border-slate-700 px-4 py-1.5 rounded-lg">
+                <i class="fa-solid fa-trophy text-amber-400 text-sm"></i>
+                <span class="text-xs text-slate-400">Бали:</span>
+                <span id="score-display" class="font-bold text-amber-400 text-sm">0 / 500</span>
             </div>
-            <div id="pyodide-status" class="flex items-center gap-2 text-xs bg-cat-overlay/40 px-3 py-1.5 rounded-lg border border-cat-overlay">
-                <span id="pyodide-spinner" class="animate-spin text-cat-yellow">⏳</span>
-                <span id="pyodide-msg" class="text-cat-subtext">Завантаження Python...</span>
+
+            <!-- Python Status Indicator -->
+            <div id="py-status" class="flex items-center space-x-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold">
+                <i class="fa-solid fa-circle-notch fa-spin"></i>
+                <span>Завантаження Python...</span>
             </div>
         </div>
     </header>
 
-    <!-- Main Workspace Container -->
-    <main class="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 p-4 max-w-[1800px] w-full mx-auto">
-        
-        <!-- Left Sidebar: Task Navigator -->
-        <aside class="lg:col-span-3 bg-cat-surface border border-cat-overlay rounded-xl p-4 flex flex-col justify-between shadow-lg">
-            <div>
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-cat-subtext mb-3 flex items-center justify-between">
-                    <span>📋 Список Місій</span>
-                    <span class="text-xs text-cat-peach font-normal">5 Завдань</span>
+    <!-- Main Content Area -->
+    <div class="flex flex-1 overflow-hidden">
+
+        <!-- Sidebar Mission List -->
+        <aside class="w-80 bg-slate-900/90 border-r border-slate-800 flex flex-col shrink-0">
+            <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-cyan-400"></i> Список Місій
                 </h2>
-                <nav id="tasks-list" class="space-y-2">
-                    <!-- Dynamic task buttons will be rendered here -->
-                </nav>
+                <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">5 завдань</span>
+            </div>
+            
+            <div id="missions-list" class="flex-1 overflow-y-auto scrollbar-custom p-3 space-y-2">
+                <!-- Dynamically loaded missions -->
             </div>
 
-            <!-- Help & Student Info Box -->
-            <div class="mt-6 pt-4 border-t border-cat-overlay text-xs text-cat-subtext space-y-2">
-                <div class="flex items-center gap-2 text-cat-green">
-                    <span>💡</span>
-                    <span>Код виконується локально в браузері</span>
-                </div>
-                <p>Натискайте <b class="text-cat-text">«Перевірити рішення»</b> для автоматичної перевірки завдання підсистемою автотестів.</p>
+            <!-- Footer Note -->
+            <div class="p-3 border-t border-slate-800 text-xs text-slate-500 bg-slate-950/50">
+                <p><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Натисніть <b>«Перевірити рішення»</b> для запуску автотестів.</p>
             </div>
         </aside>
 
-        <!-- Center Workspace: Task Description + Code Editor -->
-        <section class="lg:col-span-9 flex flex-col gap-4">
-            
-            <!-- Task Briefing Panel -->
-            <div class="bg-cat-surface border border-cat-overlay rounded-xl p-5 shadow-lg relative">
-                <div class="flex justify-between items-start gap-4 mb-2">
-                    <div>
-                        <span id="task-category" class="text-xs font-mono px-2 py-0.5 rounded bg-cat-blue/10 text-cat-blue border border-cat-blue/20">Введення / Виведення</span>
-                        <h2 id="task-title" class="text-xl font-bold text-cat-text mt-1 flex items-center gap-2">
-                            Завантаження місії...
-                        </h2>
-                    </div>
-                    <button id="hint-btn" onclick="toggleHint()" class="text-xs bg-cat-overlay hover:bg-cat-overlay/80 text-cat-yellow px-3 py-1.5 rounded-lg flex items-center gap-1 border border-cat-yellow/30 transition">
-                        💡 Підказка
+        <!-- Main Workspace -->
+        <main class="flex-1 flex flex-col min-w-0 bg-slate-950">
+
+            <!-- Mission Description Panel -->
+            <div class="p-5 border-b border-slate-800 bg-slate-900/40 overflow-y-auto max-h-48 scrollbar-custom shrink-0">
+                <div class="flex items-center justify-between mb-2">
+                    <span id="mission-topic" class="text-xs font-semibold uppercase px-2.5 py-1 rounded bg-cyan-950 text-cyan-400 border border-cyan-800/50">
+                        Тема
+                    </span>
+                    <button id="hint-btn" onclick="toggleHint()" class="text-xs bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 px-3 py-1 rounded transition flex items-center gap-1.5">
+                        <i class="fa-regular fa-lightbulb"></i> Підказка
                     </button>
                 </div>
 
-                <!-- Story & Description -->
-                <p id="task-desc" class="text-sm text-cat-subtext leading-relaxed mt-2">
-                    Оберіть завдання зі списку ліворуч, щоб розпочати кібер-місію.
+                <h2 id="mission-title" class="text-xl font-bold text-slate-100 mb-2 flex items-center gap-2">
+                    Завантаження завдання...
+                </h2>
+
+                <p id="mission-desc" class="text-slate-300 text-sm leading-relaxed mb-3">
+                    Будь ласка, оберіть місію зі списку ліворуч.
                 </p>
 
-                <!-- Dynamic Hint Box -->
-                <div id="hint-box" class="hidden mt-3 p-3 bg-cat-overlay/40 rounded-lg border border-cat-yellow/20 text-xs text-cat-yellow">
-                    <span class="font-bold">💡 Підказка:</span> <span id="hint-text">...</span>
+                <!-- I/O Specs -->
+                <div class="grid grid-cols-2 gap-3 text-xs">
+                    <div class="bg-slate-900/80 border border-slate-800 rounded p-2.5">
+                        <span class="font-bold text-slate-400 block mb-1">📥 Вхідні дані:</span>
+                        <code id="mission-input-desc" class="text-cyan-300 font-mono">-</code>
+                    </div>
+                    <div class="bg-slate-900/80 border border-slate-800 rounded p-2.5">
+                        <span class="font-bold text-slate-400 block mb-1">📤 Очікуваний результат:</span>
+                        <code id="mission-output-desc" class="text-emerald-300 font-mono">-</code>
+                    </div>
                 </div>
 
-                <!-- Requirements / Expected Output -->
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                    <div class="bg-cat-base p-3 rounded-lg border border-cat-overlay">
-                        <span class="font-bold text-cat-blue block mb-1">📥 Вхідні дані:</span>
-                        <code id="task-input-req" class="text-cat-subtext font-mono">...</code>
-                    </div>
-                    <div class="bg-cat-base p-3 rounded-lg border border-cat-overlay">
-                        <span class="font-bold text-cat-green block mb-1">📤 Очікуваний результат:</span>
-                        <code id="task-output-req" class="text-cat-subtext font-mono">...</code>
-                    </div>
+                <!-- Hidden Hint Box -->
+                <div id="hint-box" class="hidden mt-3 p-3 bg-amber-950/40 border border-amber-500/30 rounded-lg text-xs text-amber-200">
+                    <strong class="block mb-1 text-amber-400">💡 Підказка:</strong>
+                    <span id="hint-text">...</span>
                 </div>
             </div>
 
-            <!-- Editor and Terminal Split Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 flex-1">
+            <!-- Editor & Console Split View -->
+            <div class="flex-1 grid grid-cols-2 gap-0 overflow-hidden min-h-0">
                 
-                <!-- Python Code Editor Panel -->
-                <div class="bg-cat-surface border border-cat-overlay rounded-xl flex flex-col overflow-hidden shadow-lg min-h-[350px]">
-                    <div class="bg-cat-overlay/50 px-4 py-2 border-b border-cat-overlay flex justify-between items-center text-xs">
-                        <span class="font-mono text-cat-subtext flex items-center gap-2">
-                            <span>🐍</span> main.py
+                <!-- Monaco Code Editor Box -->
+                <div class="flex flex-col border-r border-slate-800 min-w-0">
+                    <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex justify-between items-center shrink-0">
+                        <span class="text-xs font-mono text-slate-400 flex items-center gap-2">
+                            <i class="fa-brands fa-python text-emerald-400"></i> main.py
                         </span>
-                        <div class="flex items-center gap-2">
-                            <button onclick="resetTaskCode()" class="text-cat-subtext hover:text-cat-red transition px-2 py-0.5 rounded hover:bg-cat-overlay">
-                                🔄 Скинути
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Editor Textarea -->
-                    <div class="relative flex-1 bg-cat-base flex">
-                        <div id="line-numbers" class="w-10 py-3 text-right pr-2 text-cat-subtext/40 font-mono text-xs select-none bg-cat-surface/30 border-r border-cat-overlay">
-                            1
-                        </div>
-                        <textarea id="code-editor" spellcheck="false" class="editor-textarea flex-1 bg-transparent p-3 font-mono text-xs text-cat-text leading-relaxed w-full h-full border-none focus:outline-none" placeholder="# Напишіть свій код Python тут..."></textarea>
-                    </div>
-
-                    <!-- Action Controls -->
-                    <div class="p-3 bg-cat-surface border-t border-cat-overlay flex items-center justify-between gap-3">
-                        <button id="run-btn" onclick="runPythonCode()" disabled class="flex-1 bg-cat-overlay hover:bg-cat-overlay/80 text-cat-text text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 transition opacity-50 cursor-not-allowed">
-                            ▶️ Запустити код
+                        <button onclick="resetCodeTemplate()" class="text-xs text-slate-400 hover:text-slate-200 transition">
+                            <i class="fa-solid fa-rotate-left mr-1"></i> Скинути код
                         </button>
-                        <button id="test-btn" onclick="testPythonCode()" disabled class="flex-1 bg-gradient-to-r from-cat-green to-emerald-500 hover:opacity-90 text-cat-base text-xs font-bold py-2.5 px-4 rounded-lg flex items-center justify-center gap-2 shadow-md transition opacity-50 cursor-not-allowed">
-                            🧪 Перевірити рішення
+                    </div>
+                    <div id="editor-container" class="flex-1 w-full bg-[#1e1e1e]"></div>
+                    
+                    <!-- Control Action Buttons -->
+                    <div class="p-3 bg-slate-900/90 border-t border-slate-800 flex gap-3 shrink-0">
+                        <button onclick="runCodeManual()" id="run-btn" disabled class="flex-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-200 font-medium py-2 px-4 rounded-lg text-sm transition flex items-center justify-center gap-2 border border-slate-700">
+                            <i class="fa-solid fa-play text-cyan-400"></i> Запустити код
+                        </button>
+                        <button onclick="testSolution()" id="test-btn" disabled class="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-semibold py-2 px-4 rounded-lg text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30">
+                            <i class="fa-solid fa-vial"></i> Перевірити рішення
                         </button>
                     </div>
                 </div>
 
-                <!-- Console / Test Results Terminal -->
-                <div class="bg-cat-surface border border-cat-overlay rounded-xl flex flex-col overflow-hidden shadow-lg min-h-[350px]">
-                    <div class="bg-cat-overlay/50 px-4 py-2 border-b border-cat-overlay flex justify-between items-center text-xs">
-                        <span class="font-mono text-cat-subtext flex items-center gap-2">
-                            <span>💻</span> Консоль & Результати Перевірки
+                <!-- Output Console Box -->
+                <div class="flex flex-col bg-slate-950 min-w-0">
+                    <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex justify-between items-center shrink-0">
+                        <span class="text-xs font-mono text-slate-400 flex items-center gap-2">
+                            <i class="fa-solid fa-terminal text-purple-400"></i> Консоль & Результати
                         </span>
-                        <button onclick="clearConsole()" class="text-cat-subtext hover:text-cat-text transition px-2 py-0.5 rounded hover:bg-cat-overlay">
-                            🧹 Очистити
+                        <button onclick="clearConsole()" class="text-xs text-slate-400 hover:text-slate-200 transition">
+                            <i class="fa-solid fa-trash-can mr-1"></i> Очистити
                         </button>
                     </div>
-
-                    <div id="console-output" class="flex-1 bg-cat-base p-4 font-mono text-xs overflow-y-auto space-y-2 text-cat-subtext">
-                        <div class="text-cat-subtext/60 italic">Ініціалізація середовища розробки... Натисніть «Запустити» або «Перевірити».</div>
+                    <div id="console-output" class="flex-1 p-4 font-mono text-xs overflow-y-auto scrollbar-custom space-y-2 text-slate-300 select-text">
+                        <div class="text-slate-500 italic">Натисніть «Запустити код» або «Перевірити рішення», щоб побачити результат...</div>
                     </div>
                 </div>
 
             </div>
 
-        </section>
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-cat-surface border-t border-cat-overlay mt-6 py-3 px-4 text-center text-xs text-cat-subtext">
-        <p>⚡ **Кібер-Лабораторія Python** — Розроблено для практичної перевірки алгоритмічного мислення та компетентностей учнів.</p>
-    </footer>
-
-    <!-- Certification Modal on Completion -->
-    <div id="cert-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
-        <div class="bg-cat-surface border-2 border-cat-green rounded-2xl max-w-md w-full p-6 text-center shadow-2xl relative">
-            <div class="text-6xl mb-3">🎓</div>
-            <h3 class="text-2xl font-bold text-cat-green mb-1">Вітаємо, Кібер-Детективе!</h3>
-            <p class="text-xs text-cat-subtext mb-4">Ви успішно виконали всі 5 практичних місій та підтвердили свої компетентності у Python!</p>
-            
-            <div class="bg-cat-base p-4 rounded-xl border border-cat-overlay mb-5 text-left text-xs space-y-2">
-                <div class="flex justify-between">
-                    <span class="text-cat-subtext">Учень/Учениця:</span>
-                    <span id="cert-student-name" class="font-bold text-cat-mauve">Юний Розробник</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-cat-subtext">Набрано балів:</span>
-                    <span id="cert-score" class="font-mono font-bold text-cat-yellow">500 / 500</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-cat-subtext">Рівень компетентності:</span>
-                    <span class="font-bold text-cat-green">High / Мастер Python</span>
-                </div>
-            </div>
-
-            <button onclick="closeCertModal()" class="w-full bg-cat-green text-cat-base font-bold py-2.5 rounded-xl hover:opacity-90 transition">
-                Продовжити роботу
-            </button>
-        </div>
+        </main>
     </div>
 
-    <!-- Application Engine Logic -->
+    <!-- Script Application Logic -->
     <script>
-        // --- Task Data Structure (Competence-Based Real-World Challenges) ---
-        const tasks = [
+        // Missions Data
+        const missions = [
             {
                 id: 1,
-                title: "1. Детектор температури сервера",
-                category: "Введення / Виведення",
                 icon: "🌡️",
+                title: "1. Детектор температури сервера",
+                topic: "Введення / Виведення",
                 points: 100,
-                desc: "Вам доручено налаштувати моніторинг температурного датчика в серверній кімнаті school_server. Програма має зчитувати значення температури в градусах Цельсія (°C) та виводити еквівалент у Фаренгейтах (°F) за формулою: <b>F = C * 1.8 + 32</b>.",
-                hint: "Використовуйте float(input()) для зчитування числа з плаваючою крапкою та print() для виведення результату.",
-                inputReq: "Одне число (температура °C), наприклад: 25",
-                outputReq: "Число градусів у Фаренгейтах, наприклад: 77.0",
-                initialCode: `# Місія 1: Конвертер температури для сервера
-celsius = float(input())
-
-# Напишіть ваш код нижче (обчисліть fahrenheit):
-fahrenheit = celsius * 1.8 + 32
-
-print(fahrenheit)`,
-                testCases: [
-                    { input: "0\n", expected: "32.0" },
-                    { input: "25\n", expected: "77.0" },
-                    { input: "-10\n", expected: "14.0" }
+                desc: "Вам доручено налаштувати моніторинг температури серверної кімнати school_server. Програма має зчитувати значення температури в градусах Цельсія (°C) та виводити еквівалент у Фаренгейтах (°F) за формулою: <b>F = C * 1.8 + 32</b>.",
+                inputDesc: "Одне число (температура °C), наприклад: 25",
+                outputDesc: "Число градусів у Фаренгейтах, наприклад: 77.0",
+                template: "# Місія 1: Конвертер температури\ncelsius = float(input())\n\n# Напишіть ваш код нижче (обчисліть fahrenheit):\n\nprint(fahrenheit)",
+                hint: "Для перетворення типів використовуйте float(input()). Формула для розрахунку: fahrenheit = celsius * 1.8 + 32",
+                tests: [
+                    { inputs: ["0"], expected: "32.0" },
+                    { inputs: ["25"], expected: "77.0" },
+                    { inputs: ["-10"], expected: "14.0" }
                 ]
             },
             {
                 id: 2,
+                icon: "🔑",
                 title: "2. Перепустка в Секретну Лабораторію",
-                category: "Умови (If / Else)",
-                icon: "🔐",
+                topic: "Умови (If / Else)",
                 points: 100,
-                desc: "Напишіть систему розпізнавання допуску. На вхід подається вік користувача та наявність спец-ключа (True/False). Доступ надається (вивести 'ACCESS GRANTED'), якщо вік не менше 14 років І спец-ключ дорівнює 'True'. В іншому випадку вивести 'ACCESS DENIED'.",
-                hint: "Використовуйте оператор if age >= 14 and key == 'True':",
-                inputReq: "Рядок 1: Вік (число). Рядок 2: Ключ ('True' або 'False')",
-                outputReq: "'ACCESS GRANTED' або 'ACCESS DENIED'",
-                initialCode: `# Місія 2: Система контролю доступу
-age = int(input())
-has_key = input().strip()
-
-# Напишіть умовну конструкцію:
-if age >= 14 and has_key == "True":
-    print("ACCESS GRANTED")
-else:
-    print("ACCESS DENIED")`,
-                testCases: [
-                    { input: "15\nTrue\n", expected: "ACCESS GRANTED" },
-                    { input: "12\nTrue\n", expected: "ACCESS DENIED" },
-                    { input: "16\nFalse\n", expected: "ACCESS DENIED" }
+                desc: "Напишіть систему розпізнавання допуску. На вхід подається вік користувача та наявність спец-ключа (True/False). Доступ надається (вивести <b>'ACCESS GRANTED'</b>), якщо вік не менше 14 років І спец-ключ дорівнює 'True'. В іншому випадку вивести <b>'ACCESS DENIED'</b>.",
+                inputDesc: "Рядок 1: Вік (число). Рядок 2: Ключ ('True' або 'False')",
+                outputDesc: "'ACCESS GRANTED' або 'ACCESS DENIED'",
+                template: "# Місія 2: Система контролю допуску\nage = int(input())\nhas_key = input().strip()\n\n# Напишіть умовну конструкцію:\n",
+                hint: "Використовуйте `if age >= 14 and has_key == 'True':` для перевірки двох умов одночасно.",
+                tests: [
+                    { inputs: ["15", "True"], expected: "ACCESS GRANTED" },
+                    { inputs: ["12", "True"], expected: "ACCESS DENIED" },
+                    { inputs: ["16", "False"], expected: "ACCESS DENIED" }
                 ]
             },
             {
                 id: 3,
-                title: "3. Аналізатор Зоряного Пилу",
-                category: "Цикли (For / While)",
                 icon: "✨",
+                title: "3. Аналізатор Зоряного Пилу",
+                topic: "Цикли (For / While)",
                 points: 100,
-                desc: "Марсохід збирає зразки мінералів. Дано список мас зразків (у грамах). Знайдіть суму мас тільки тих зразків, які важать більше ніж 10 грамів (інші вважаються пилом і ігноруються).",
-                hint: "Створити змінну-лічильник total = 0, пройтися циклом for item in samples: та додавати значення, якщо item > 10.",
-                inputReq: "Список мас зразків передається у функцію filter_samples(samples)",
-                outputReq: "Функція повинна повертати суму корисних зразків",
-                initialCode: `def filter_samples(samples):
-    # samples - це список чисел, наприклад [5, 12, 8, 20, 3]
-    total_mass = 0
-    
-    # Напишіть цикл для підрахунку:
-    for item in samples:
-        if item > 10:
-            total_mass += item
-            
-    return total_mass`,
-                functionTest: true,
-                funcName: "filter_samples",
-                testCases: [
-                    { args: [[5, 12, 8, 20, 3]], expected: 32 },
-                    { args: [[1, 2, 3]], expected: 0 },
-                    { args: [[15, 25, 30]], expected: 70 }
+                desc: "Телескоп зібрав серію вимірювань щільності зоряного пилу (кількість чисел подається першим рядком N, далі N чисел). Потрібно знайти <b>суму всіх парних вимірювань</b> та вивести її.",
+                inputDesc: "Кількість елементів N, після чого N чисел (по одному в рядку)",
+                outputDesc: "Сума лише парних чисел",
+                template: "# Місія 3: Сума парних вимірювань\nn = int(input())\ntotal_even = 0\n\n# Напишіть цикл для зчитування n чисел та підсумовування парних:\n\n\nprint(total_even)",
+                hint: "Використовуйте `for _ in range(n):` для циклу та перевірку `val % 2 == 0` для парності.",
+                tests: [
+                    { inputs: ["4", "2", "5", "8", "3"], expected: "10" },
+                    { inputs: ["3", "1", "3", "5"], expected: "0" },
+                    { inputs: ["5", "10", "20", "30", "1", "2"], expected: "60" }
                 ]
             },
             {
                 id: 4,
-                title: "4. Інвентар Космічного Корабля",
-                category: "Структури даних (Lists)",
                 icon: "📦",
+                title: "4. Інвентар Космічного Корабля",
+                topic: "Структури даних (Lists)",
                 points: 100,
-                desc: "Напишіть функцію clean_inventory(items), яка приймає список предметів корабля. Функція повинна видалити всі дублікати, відсортувати назви за алфавітом і повернути новий очищений список.",
-                hint: "Ви можете перетворити список у set(), а потім назад у відсортований список: sorted(list(set(items))).",
-                inputReq: "Список рядків з повторами",
-                outputReq: "Відсортований список унікальних елементів",
-                initialCode: `def clean_inventory(items):
-    # items - список рядків з назвами ресурсів
-    # Видаліть дублікати та відсортуйте за алфавітом:
-    unique_items = sorted(list(set(items)))
-    return unique_items`,
-                functionTest: true,
-                funcName: "clean_inventory",
-                testCases: [
-                    { args: [["кисень", "вода", "кисень", "аптечка"]], expected: ["аптечка", "вода", "кисень"] },
-                    { args: [["б", "а", "б"]], expected: ["а", "б"] }
+                desc: "Отримано список предметів вантажного відсіку (рядки через кому). Програма має сформувати та вивести відсортований за алфавітом список без дублікатів у форматі: <b>Предмети: item1, item2, ...</b>",
+                inputDesc: "Рядок елементів через кому, наприклад: 'water,food,water,tools'",
+                outputDesc: "'Предмети: food, tools, water'",
+                template: "# Місія 4: Оптимізація інвентарю\nitems_raw = input()\n\n# 1. Розбийте рядок на список (split)\n# 2. Видаліть дублікати (set або unique)\n# 3. Відсортуйте за алфавітом (sorted)\n# 4. Виведіть у потрібному форматі\n",
+                hint: "Використовуйте `set(items_raw.split(','))` для видалення дублікатів та `sorted()` для сортування. Об'єднати можна через `', '.join(...)`.",
+                tests: [
+                    { inputs: ["water,food,water,tools"], expected: "Предмети: food, tools, water" },
+                    { inputs: ["laser,shield,laser,shield"], expected: "Предмети: laser, shield" }
                 ]
             },
             {
                 id: 5,
-                title: "5. Шифратор «Цезар-Lite»",
-                category: "Функції & Алгоритми",
                 icon: "🔐",
+                title: "5. Шифратор «Цезар-Lite»",
+                topic: "Функції & Алгоритми",
                 points: 100,
-                desc: "Захистіть передачу даних! Напишіть функцію encrypt_msg(text, shift), яка зсуває кожен символ у рядку text на shift позицій вперед за його кодом Юнікод (використовуйте chr() та ord()).",
-                hint: "Для кожного символу c у тексті новий символ створюється як chr(ord(c) + shift).",
-                inputReq: "Текст (рядок) та зсув (число)",
-                outputReq: "Зашифрований рядок",
-                initialCode: `def encrypt_msg(text, shift):
-    encrypted = ""
-    for char in text:
-        # Зсув коду символу:
-        encrypted += chr(ord(char) + shift)
-    return encrypted`,
-                functionTest: true,
-                funcName: "encrypt_msg",
-                testCases: [
-                    { args: ["Code", 1], expected: "Dpef" },
-                    { args: ["Python", 2], expected: "R{vjqp" }
+                desc: "Створіть функцію <b>encrypt(text, shift)</b>, яка зміщує кожен символ рядка text на shift позицій вперед у таблиці Юнікод (`ord()` та `chr()`). Програма зчитує рядок та число зміщення і виводить зашифрований текст.",
+                inputDesc: "Рядок 1: Текст. Рядок 2: Число зміщення (shift)",
+                outputDesc: "Зашифрований рядок",
+                template: "# Місія 5: Шифр Цезаря\ndef encrypt(text, shift):\n    result = ''\n    # Ваш код функції тут:\n    return result\n\nuser_text = input()\nuser_shift = int(input())\nprint(encrypt(user_text, user_shift))",
+                hint: "Для кожного символу c у тексті: `chr(ord(c) + shift)`.",
+                tests: [
+                    { inputs: ["abc", "1"], expected: "bcd" },
+                    { inputs: ["Code", "2"], expected: "Eqfg" }
                 ]
             }
         ];
 
-        // --- Application State ---
-        let currentTaskIdx = 0;
         let pyodide = null;
-        let completedTasks = new Set();
-        let userScores = {};
+        let editor = null;
+        let currentMissionId = 1;
+        let completedMissions = new Set();
+        let totalScore = 0;
 
-        // --- DOM Elements ---
-        const tasksListNav = document.getElementById('tasks-list');
-        const taskTitle = document.getElementById('task-title');
-        const taskCategory = document.getElementById('task-category');
-        const taskDesc = document.getElementById('task-desc');
-        const taskInputReq = document.getElementById('task-input-req');
-        const taskOutputReq = document.getElementById('task-output-req');
-        const hintBox = document.getElementById('hint-box');
-        const hintText = document.getElementById('hint-text');
-        const codeEditor = document.getElementById('code-editor');
-        const lineNumbers = document.getElementById('line-numbers');
-        const consoleOutput = document.getElementById('console-output');
-        const progressBar = document.getElementById('progress-bar');
-        const progressText = document.getElementById('progress-text');
-        const scoreCounter = document.getElementById('score-counter');
-        const runBtn = document.getElementById('run-btn');
-        const testBtn = document.getElementById('test-btn');
+        // Initialize Monaco Editor
+        require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' } });
+        require(['vs/editor/editor.main'], function () {
+            editor = monaco.editor.create(document.getElementById('editor-container'), {
+                value: missions[0].template,
+                language: 'python',
+                theme: 'vs-dark',
+                fontSize: 14,
+                fontFamily: 'Fira Code',
+                automaticLayout: true,
+                minimap: { enabled: false },
+                lineNumbers: "on",
+                roundedSelection: true,
+                scrollBeyondLastLine: false
+            });
+        });
 
-        // --- Initialize Pyodide ---
+        // Initialize Pyodide
         async function initPyodide() {
             try {
                 pyodide = await loadPyodide();
-                document.getElementById('pyodide-spinner').innerText = "✅";
-                document.getElementById('pyodide-msg').innerText = "Python Готовий";
-                document.getElementById('pyodide-status').classList.add('border-cat-green/40');
+                const status = document.getElementById('py-status');
+                status.className = "flex items-center space-x-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold";
+                status.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i><span>Python Готовий</span>`;
                 
-                // Enable execution buttons
-                runBtn.disabled = false;
-                testBtn.disabled = false;
-                runBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                testBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                document.getElementById('run-btn').disabled = false;
+                document.getElementById('test-btn').disabled = false;
             } catch (err) {
-                document.getElementById('pyodide-spinner').innerText = "❌";
-                document.getElementById('pyodide-msg').innerText = "Помилка завантаження";
-                console.error("Pyodide Load Error:", err);
+                console.error("Помилка завантаження Pyodide:", err);
+                document.getElementById('py-status').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i><span>Помилка завантаження</span>`;
             }
         }
+        initPyodide();
 
-        // --- Render Task Navigation ---
-        function renderTaskList() {
-            tasksListNav.innerHTML = '';
-            tasks.forEach((task, idx) => {
-                const isCompleted = completedTasks.has(task.id);
-                const isActive = idx === currentTaskIdx;
+        // Render Mission List
+        function renderMissions() {
+            const listContainer = document.getElementById('missions-list');
+            listContainer.innerHTML = '';
 
-                const btn = document.createElement('button');
-                btn.onclick = () => selectTask(idx);
-                btn.className = `w-full text-left p-3 rounded-xl border flex items-center justify-between transition ${
+            missions.forEach(mission => {
+                const isCompleted = completedMissions.has(mission.id);
+                const isActive = mission.id === currentMissionId;
+
+                const item = document.createElement('div');
+                item.className = `p-3 rounded-lg border cursor-pointer transition-all flex items-center justify-between ${
                     isActive 
-                        ? 'bg-cat-overlay/80 border-cat-blue text-cat-text font-bold shadow-md' 
-                        : 'bg-cat-base/40 border-cat-overlay/60 text-cat-subtext hover:bg-cat-overlay/40'
+                        ? 'bg-slate-800 border-cyan-500 shadow-md shadow-cyan-950/50' 
+                        : 'bg-slate-900/50 border-slate-800 hover:bg-slate-800/60'
                 }`;
+                item.onclick = () => selectMission(mission.id);
 
-                btn.innerHTML = `
-                    <div class="flex items-center gap-2.5">
-                        <span class="text-lg">${task.icon}</span>
-                        <div class="truncate">
-                            <div class="text-xs ${isActive ? 'text-cat-blue' : 'text-cat-text'} truncate">${task.title}</div>
-                            <div class="text-[10px] text-cat-subtext/70">${task.category}</div>
+                item.innerHTML = `
+                    <div class="flex items-center space-x-3 min-w-0">
+                        <span class="text-xl">${mission.icon}</span>
+                        <div class="min-w-0">
+                            <h3 class="text-xs font-bold text-slate-200 truncate">${mission.title}</h3>
+                            <p class="text-[10px] text-slate-400">${mission.topic}</p>
                         </div>
                     </div>
-                    <span class="text-sm">${isCompleted ? '✅' : (isActive ? '⏳' : '🔒')}</span>
+                    <div>
+                        ${isCompleted 
+                            ? '<i class="fa-solid fa-circle-check text-emerald-400 text-base"></i>' 
+                            : '<i class="fa-regular fa-hourglass text-slate-600 text-sm"></i>'
+                        }
+                    </div>
                 `;
-                tasksListNav.appendChild(btn);
+                listContainer.appendChild(item);
             });
         }
 
-        // --- Select & Load Task ---
-        function selectTask(idx) {
-            currentTaskIdx = idx;
-            const task = tasks[idx];
+        function selectMission(id) {
+            currentMissionId = id;
+            const mission = missions.find(m => m.id === id);
 
-            taskTitle.innerHTML = `${task.icon} ${task.title}`;
-            taskCategory.innerText = task.category;
-            taskDesc.innerHTML = task.desc;
-            taskInputReq.innerText = task.inputReq;
-            taskOutputReq.innerText = task.outputReq;
-            hintText.innerText = task.hint;
-            hintBox.classList.add('hidden');
+            document.getElementById('mission-title').innerHTML = `${mission.icon} ${mission.title}`;
+            document.getElementById('mission-topic').innerText = mission.topic;
+            document.getElementById('mission-desc').innerHTML = mission.desc;
+            document.getElementById('mission-input-desc').innerText = mission.inputDesc;
+            document.getElementById('mission-output-desc').innerText = mission.outputDesc;
+            document.getElementById('hint-text').innerText = mission.hint;
+            document.getElementById('hint-box').classList.add('hidden');
 
-            // Load Code Template
-            codeEditor.value = task.initialCode;
-            updateLineNumbers();
-
-            renderTaskList();
-            logConsole(`Зміна місії -> Loaded ${task.title}`, 'info');
-        }
-
-        // --- Line Numbers Sync ---
-        codeEditor.addEventListener('input', updateLineNumbers);
-        codeEditor.addEventListener('scroll', () => {
-            lineNumbers.scrollTop = codeEditor.scrollTop;
-        });
-
-        function updateLineNumbers() {
-            const lines = codeEditor.value.split('\n').length;
-            lineNumbers.innerHTML = Array.from({ length: lines }, (_, i) => i + 1).join('<br>');
-        }
-
-        // Tab Key Support in Code Editor
-        codeEditor.addEventListener('keydown', function(e) {
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = this.selectionStart;
-                const end = this.selectionEnd;
-                this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
-                this.selectionStart = this.selectionEnd = start + 4;
-                updateLineNumbers();
-            }
-        });
-
-        // --- Console Utilities ---
-        function logConsole(msg, type = 'normal') {
-            const entry = document.createElement('div');
-            entry.className = "font-mono text-xs border-l-2 pl-2 py-0.5 my-1 leading-relaxed";
-
-            if (type === 'error') {
-                entry.className += " border-cat-red bg-cat-red/10 text-cat-red";
-            } else if (type === 'success') {
-                entry.className += " border-cat-green bg-cat-green/10 text-cat-green";
-            } else if (type === 'info') {
-                entry.className += " border-cat-blue text-cat-blue";
-            } else {
-                entry.className += " border-cat-overlay text-cat-text";
+            if (editor) {
+                editor.setValue(mission.template);
             }
 
-            entry.innerText = msg;
-            consoleOutput.appendChild(entry);
-            consoleOutput.scrollTop = consoleOutput.scrollHeight;
-        }
-
-        function clearConsole() {
-            consoleOutput.innerHTML = '';
+            renderMissions();
         }
 
         function toggleHint() {
-            hintBox.classList.toggle('hidden');
+            const box = document.getElementById('hint-box');
+            box.classList.toggle('hidden');
         }
 
-        function resetTaskCode() {
-            codeEditor.value = tasks[currentTaskIdx].initialCode;
-            updateLineNumbers();
-            logConsole("Код відновлено до початкового шаблону.", "info");
-        }
-
-        // --- Python Code Execution ---
-        async function runPythonCode() {
-            if (!pyodide) return;
-            clearConsole();
-            logConsole("▶️ Запуск коду Python...", "info");
-
-            const code = codeEditor.value;
-
-            // Redirect stdout
-            pyodide.setStdout({
-                batched: (msg) => logConsole(msg, 'normal')
-            });
-
-            try {
-                await pyodide.runPythonAsync(code);
-                logConsole("=== Виконання завершено успішно ===", "info");
-            } catch (err) {
-                logConsole(`Помилка виконання:\n${err.message}`, "error");
+        function resetCodeTemplate() {
+            const mission = missions.find(m => m.id === currentMissionId);
+            if (editor && mission) {
+                editor.setValue(mission.template);
+                appendConsoleLog("Код відновлено до початкового шаблону.", "info");
             }
         }
 
-        // --- Automated Testing Framework ---
-        async function testPythonCode() {
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+
+        function appendConsoleLog(msg, type = "normal") {
+            const consoleBox = document.getElementById('console-output');
+            const line = document.createElement('div');
+
+            if (type === "error") {
+                line.className = "text-rose-400 bg-rose-950/30 p-2 rounded border border-rose-900/50";
+                line.innerHTML = `<i class="fa-solid fa-bug mr-1"></i> ${msg}`;
+            } else if (type === "success") {
+                line.className = "text-emerald-400 bg-emerald-950/30 p-2 rounded border border-emerald-900/50";
+                line.innerHTML = `<i class="fa-solid fa-check mr-1"></i> ${msg}`;
+            } else if (type === "info") {
+                line.className = "text-cyan-400 italic";
+                line.innerText = msg;
+            } else {
+                line.className = "text-slate-200 font-mono";
+                line.innerText = msg;
+            }
+
+            consoleBox.appendChild(line);
+            consoleBox.scrollTop = consoleBox.scrollHeight;
+        }
+
+        // Custom Safe Runner for Manual Run with Mock Input
+        async function runCodeManual() {
             if (!pyodide) return;
             clearConsole();
-            logConsole("🧪 Запуск автоматичних тестів...", "info");
+            appendConsoleLog("▶ Запуск коду Python...", "info");
 
-            const task = tasks[currentTaskIdx];
-            const userCode = codeEditor.value;
-            let allPassed = true;
+            const userCode = editor.getValue();
 
-            for (let i = 0; i < task.testCases.length; i++) {
-                const test = task.testCases[i];
-                let passed = false;
-                let actualOutput = "";
+            // Override input() to prompt browser dialogs
+            const wrapperCode = `
+import sys
+
+def custom_input(prompt=''):
+    import js
+    val = js.prompt(prompt if prompt else "Введіть значення для input():")
+    if val is None:
+        return ""
+    return str(val)
+
+input = custom_input
+
+try:
+${userCode.split('\n').map(line => '    ' + line).join('\n')}
+except Exception as e:
+    import traceback
+    print("ПОМИЛКА:", e)
+`;
+
+            try {
+                // Setup stdout capture
+                pyodide.runPython(`
+import sys
+import io
+sys.stdout = io.StringIO()
+`);
+                await pyodide.runPythonAsync(wrapperCode);
+                const output = pyodide.runPython("sys.stdout.getvalue()");
+                
+                if (output) {
+                    appendConsoleLog(output);
+                } else {
+                    appendConsoleLog("(Програма виконана без виведення даних)");
+                }
+            } catch (err) {
+                appendConsoleLog(`Помилка виконання:\n${err.message}`, "error");
+            }
+        }
+
+        // Automatic Test Runner
+        async function testSolution() {
+            if (!pyodide) return;
+            clearConsole();
+            appendConsoleLog("🧪 Запуск автоматичних тестів...", "info");
+
+            const mission = missions.find(m => m.id === currentMissionId);
+            const userCode = editor.getValue();
+            let passedAll = true;
+
+            for (let i = 0; i < mission.tests.length; i++) {
+                const test = mission.tests[i];
+                const inputQueue = JSON.stringify(test.inputs);
+
+                const testRunnerPython = `
+import sys
+import io
+
+inputs = ${inputQueue}
+input_idx = 0
+
+def mock_input(prompt=''):
+    global input_idx
+    if input_idx < len(inputs):
+        val = inputs[input_idx]
+        input_idx += 1
+        return str(val)
+    return ""
+
+input = mock_input
+sys.stdout = io.StringIO()
+
+exec_error = None
+try:
+${userCode.split('\n').map(line => '    ' + line).join('\n')}
+except Exception as e:
+    exec_error = str(e)
+
+output_val = sys.stdout.getvalue().strip()
+(output_val, exec_error)
+`;
 
                 try {
-                    if (task.functionTest) {
-                        // Test Python Function directly
-                        await pyodide.runPythonAsync(userCode);
-                        const func = pyodide.globals.get(task.funcName);
+                    const res = await pyodide.runPythonAsync(testRunnerPython);
+                    const output = res.get(0);
+                    const error = res.get(1);
 
-                        if (!func) {
-                            throw new Error(`Функція '${task.funcName}' не знайдена. Перевірте назву.`);
-                        }
-
-                        const result = func(...test.args);
-                        const expectedStr = JSON.stringify(test.expected);
-                        const actualStr = JSON.stringify(result.toJs ? result.toJs() : result);
-
-                        passed = actualStr === expectedStr;
-                        actualOutput = actualStr;
-
-                    } else {
-                        // Test IO with mock stdin and stdout capture
-                        let stdoutBuffer = [];
-                        pyodide.setStdout({ batched: (msg) => stdoutBuffer.push(msg) });
-
-                        // Mock stdin
-                        const inputLines = test.input.trim().split('\n');
-                        let inputIdx = 0;
-                        pyodide.globals.set('custom_input', () => inputLines[inputIdx++] || "");
-
-                        // Code wrapping for stdin
-                        const wrappedCode = `
-import builtins
-builtins.input = custom_input
-${userCode}
-                        `;
-
-                        await pyodide.runPythonAsync(wrappedCode);
-                        actualOutput = stdoutBuffer.join('').trim();
-                        passed = actualOutput === test.expected.trim();
+                    if (error) {
+                        passedAll = false;
+                        appendConsoleLog(`Тест ${i + 1} ❌: Помилка коду -> ${error}`, "error");
+                        break;
                     }
 
-                    if (passed) {
-                        logConsole(`✅ Тест ${i + 1} пройдено!`, "success");
+                    if (output === test.expected) {
+                        appendConsoleLog(`Тест ${i + 1} ✅: Вхід [${test.inputs.join(', ')}] ➔ Вивід: "${output}"`, "success");
                     } else {
-                        allPassed = false;
-                        logConsole(`❌ Тест ${i + 1} НЕ пройдено.`, "error");
-                        logConsole(`   Очікувалося: ${JSON.stringify(test.expected)}`, "error");
-                        logConsole(`   Отримано:    ${actualOutput}`, "error");
+                        passedAll = false;
+                        appendConsoleLog(`Тест ${i + 1} ❌: Вхід [${test.inputs.join(', ')}]\n  Очікувалось: "${test.expected}"\n  Отримано:    "${output}"`, "error");
                     }
-
                 } catch (err) {
-                    allPassed = false;
-                    logConsole(`❌ Помилка на тесті ${i + 1}: ${err.message}`, "error");
+                    passedAll = false;
+                    appendConsoleLog(`Тест ${i + 1} ❌: Синтаксична помилка -> ${err.message}`, "error");
+                    break;
                 }
             }
 
-            // Evaluation Summary
-            if (allPassed) {
-                logConsole("🎉 ВІТАЄМО! Всі тести пройдено успішно!", "success");
-                completedTasks.add(task.id);
-                userScores[task.id] = task.points;
-                
-                // Trigger Confetti
-                confetti({
-                    particleCount: 80,
-                    spread: 60,
-                    origin: { y: 0.7 }
-                });
-
-                updateProgress();
+            if (passedAll) {
+                if (!completedMissions.has(mission.id)) {
+                    completedMissions.add(mission.id);
+                    totalScore += mission.points;
+                    updateProgress();
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+                appendConsoleLog(`🎉 ВІТАЄМО! Місію «${mission.title}» успішно виконано!`, "success");
             } else {
-                logConsole("⚠️ Деякі тести не пройдено. Перевірте код та спробуйте ще раз.", "error");
+                appendConsoleLog("⚠️ Перевірка не пройдена. Виправте помилки та спробуйте ще раз.", "error");
             }
+
+            renderMissions();
         }
 
-        // --- Progress and Score Updater ---
         function updateProgress() {
-            const completedCount = completedTasks.size;
-            const totalTasks = tasks.length;
-            const percent = Math.round((completedCount / totalTasks) * 100);
-
-            progressBar.style.width = `${percent}%`;
-            progressText.innerText = `${percent}%`;
-
-            const totalScore = Object.values(userScores).reduce((a, b) => a + b, 0);
-            scoreCounter.innerText = `${totalScore} / 500`;
-
-            renderTaskList();
-
-            // All tasks completed -> Cert Modal
-            if (completedCount === totalTasks) {
-                setTimeout(() => {
-                    document.getElementById('cert-score').innerText = `${totalScore} / 500`;
-                    document.getElementById('cert-modal').classList.remove('hidden');
-                }, 800);
-            }
+            const percent = Math.round((completedMissions.size / missions.length) * 100);
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+            document.getElementById('progress-text').innerText = `${percent}%`;
+            document.getElementById('score-display').innerText = `${totalScore} / ${missions.length * 100}`;
         }
 
-        function closeCertModal() {
-            document.getElementById('cert-modal').classList.add('hidden');
-        }
-
-        // Initialize App on Page Load
+        // Initialize First Mission
         window.onload = () => {
-            initPyodide();
-            renderTaskList();
-            selectTask(0);
+            selectMission(1);
         };
     </script>
 </body>

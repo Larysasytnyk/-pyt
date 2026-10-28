@@ -75,26 +75,31 @@
             </div>
         </div>
 
-        <!-- Progress Bar & Score -->
-        <div class="flex items-center space-x-6">
+        <!-- Progress Bar, Score & Submit Button -->
+        <div class="flex items-center space-x-5">
             <div class="flex items-center space-x-3">
                 <span class="text-sm font-medium text-slate-400">Прогрес:</span>
-                <div class="w-36 bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
+                <div class="w-32 bg-slate-800 rounded-full h-3 overflow-hidden border border-slate-700">
                     <div id="progress-bar" class="bg-gradient-to-r from-cyan-500 to-emerald-500 h-full transition-all duration-500" style="width: 0%"></div>
                 </div>
                 <span id="progress-text" class="text-xs font-bold text-cyan-400">0%</span>
             </div>
 
-            <div class="flex items-center space-x-2 bg-slate-800 border border-slate-700 px-4 py-1.5 rounded-lg">
+            <div class="flex items-center space-x-2 bg-slate-800 border border-slate-700 px-3 py-1.5 rounded-lg">
                 <i class="fa-solid fa-trophy text-amber-400 text-sm"></i>
                 <span class="text-xs text-slate-400">Бали:</span>
                 <span id="score-display" class="font-bold text-amber-400 text-sm">0 / 500</span>
             </div>
 
+            <!-- Submit to Teacher Button -->
+            <button onclick="openSubmitModal()" class="bg-cyan-600 hover:bg-cyan-500 text-white px-3.5 py-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 shadow-md shadow-cyan-950">
+                <i class="fa-solid fa-paper-plane"></i> Надіслати результат
+            </button>
+
             <!-- Python Status Indicator -->
             <div id="py-status" class="flex items-center space-x-2 bg-amber-500/10 text-amber-400 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold">
                 <i class="fa-solid fa-circle-notch fa-spin"></i>
-                <span>Завантаження Python...</span>
+                <span>Python...</span>
             </div>
         </div>
     </header>
@@ -115,7 +120,6 @@
                 <!-- Dynamically loaded missions -->
             </div>
 
-            <!-- Footer Note -->
             <div class="p-3 border-t border-slate-800 text-xs text-slate-500 bg-slate-950/50">
                 <p><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> Натисніть <b>«Перевірити рішення»</b> для запуску автотестів.</p>
             </div>
@@ -208,9 +212,52 @@
         </main>
     </div>
 
+    <!-- Modal for Sending Results to Teacher -->
+    <div id="submit-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane text-cyan-400"></i> Надсилання результатів вчителю
+                </h3>
+                <button onclick="closeSubmitModal()" class="text-slate-400 hover:text-white text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="text-xs text-slate-400 mb-4">
+                Введіть ваші дані, щоб звіт про виконання місій та ваш код надійшов на електронну пошту викладача.
+            </p>
+
+            <form id="teacher-form" onsubmit="submitResultsToEmail(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Прізвище та Ім'я *</label>
+                    <input type="text" id="student-name" required placeholder="Наприклад: Шевченко Тарас" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">Клас / Група *</label>
+                    <input type="text" id="student-class" required placeholder="Наприклад: 9-А" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 text-xs space-y-1 text-slate-300">
+                    <div>📊 Прогрес виконання: <span id="modal-progress" class="font-bold text-cyan-400">0%</span></div>
+                    <div>🏆 Набрано балів: <span id="modal-score" class="font-bold text-amber-400">0 / 500</span></div>
+                </div>
+
+                <div class="flex space-x-3 pt-2">
+                    <button type="button" onclick="closeSubmitModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-medium py-2.5 rounded-lg transition">
+                        Скасувати
+                    </button>
+                    <button type="submit" id="submit-btn-modal" class="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-semibold py-2.5 rounded-lg transition shadow-lg shadow-cyan-950">
+                        Надіслати звіт
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Script Application Logic -->
     <script>
-        // Missions Data
+        // Missions Data (with fixed test 3)
         const missions = [
             {
                 id: 1,
@@ -260,7 +307,7 @@
                 tests: [
                     { inputs: ["4", "2", "5", "8", "3"], expected: "10" },
                     { inputs: ["3", "1", "3", "5"], expected: "0" },
-                    { inputs: ["5", "10", "20", "30", "1", "2"], expected: "60" }
+                    { inputs: ["4", "10", "20", "30", "2"], expected: "60" }
                 ]
             },
             {
@@ -302,6 +349,7 @@
         let currentMissionId = 1;
         let completedMissions = new Set();
         let totalScore = 0;
+        let studentSolutions = {}; // Зберігаємо код учня для кожної місії
 
         // Initialize Monaco Editor
         require.config({ paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs' } });
@@ -318,6 +366,11 @@
                 roundedSelection: true,
                 scrollBeyondLastLine: false
             });
+
+            // Зберігаємо код при зміні
+            editor.onDidChangeModelContent(() => {
+                studentSolutions[currentMissionId] = editor.getValue();
+            });
         });
 
         // Initialize Pyodide
@@ -332,7 +385,7 @@
                 document.getElementById('test-btn').disabled = false;
             } catch (err) {
                 console.error("Помилка завантаження Pyodide:", err);
-                document.getElementById('py-status').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i><span>Помилка завантаження</span>`;
+                document.getElementById('py-status').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-rose-400"></i><span>Помилка</span>`;
             }
         }
         initPyodide();
@@ -374,6 +427,11 @@
         }
 
         function selectMission(id) {
+            // Зберігаємо поточний код перед перемиканням
+            if (editor) {
+                studentSolutions[currentMissionId] = editor.getValue();
+            }
+
             currentMissionId = id;
             const mission = missions.find(m => m.id === id);
 
@@ -386,21 +444,23 @@
             document.getElementById('hint-box').classList.add('hidden');
 
             if (editor) {
-                editor.setValue(mission.template);
+                // Відновлюємо попередній код учня або шаблон за замовчуванням
+                const savedCode = studentSolutions[id] !== undefined ? studentSolutions[id] : mission.template;
+                editor.setValue(savedCode);
             }
 
             renderMissions();
         }
 
         function toggleHint() {
-            const box = document.getElementById('hint-box');
-            box.classList.toggle('hidden');
+            document.getElementById('hint-box').classList.toggle('hidden');
         }
 
         function resetCodeTemplate() {
             const mission = missions.find(m => m.id === currentMissionId);
             if (editor && mission) {
                 editor.setValue(mission.template);
+                studentSolutions[currentMissionId] = mission.template;
                 appendConsoleLog("Код відновлено до початкового шаблону.", "info");
             }
         }
@@ -438,6 +498,7 @@
             appendConsoleLog("▶ Запуск коду Python...", "info");
 
             const userCode = editor.getValue();
+            studentSolutions[currentMissionId] = userCode;
 
             const wrapperCode = `
 import sys
@@ -485,6 +546,7 @@ sys.stdout = io.StringIO()
 
             const mission = missions.find(m => m.id === currentMissionId);
             const userCode = editor.getValue();
+            studentSolutions[currentMissionId] = userCode;
             let passedAll = true;
 
             for (let i = 0; i < mission.tests.length; i++) {
@@ -563,6 +625,70 @@ output_val = sys.stdout.getvalue().strip()
             document.getElementById('progress-bar').style.width = `${percent}%`;
             document.getElementById('progress-text').innerText = `${percent}%`;
             document.getElementById('score-display').innerText = `${totalScore} / ${missions.length * 100}`;
+        }
+
+        // Modal Form Management
+        function openSubmitModal() {
+            if (editor) {
+                studentSolutions[currentMissionId] = editor.getValue();
+            }
+            const percent = Math.round((completedMissions.size / missions.length) * 100);
+            document.getElementById('modal-progress').innerText = `${percent}%`;
+            document.getElementById('modal-score').innerText = `${totalScore} / ${missions.length * 100}`;
+            document.getElementById('submit-modal').classList.remove('hidden');
+        }
+
+        function closeSubmitModal() {
+            document.getElementById('submit-modal').classList.add('hidden');
+        }
+
+        async function submitResultsToEmail(event) {
+            event.preventDefault();
+            const name = document.getElementById('student-name').value;
+            const studentClass = document.getElementById('student-class').value;
+            const percent = Math.round((completedMissions.size / missions.length) * 100);
+
+            // Формуємо детальний звіт включно з кодом учня
+            let codeSummary = "";
+            missions.forEach(m => {
+                codeSummary += `--- МІСІЯ ${m.id}: ${m.title} ---\n`;
+                codeSummary += (studentSolutions[m.id] || m.template) + "\n\n";
+            });
+
+            const formData = {
+                name: name,
+                class: studentClass,
+                score: `${totalScore} / ${missions.length * 100} (${percent}%)`,
+                completed_missions: `${completedMissions.size} з ${missions.length}`,
+                solutions: codeSummary
+            };
+
+            const btn = document.getElementById('submit-btn-modal');
+            btn.disabled = true;
+            btn.innerText = "Надсилання...";
+
+            try {
+                const response = await fetch("https://formspree.io/f/maeqazql", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert("✅ Звіт успішно надіслано вчителю на пошту!");
+                    closeSubmitModal();
+                } else {
+                    alert("❌ Сталася помилка при відправці. Спробуйте ще раз.");
+                }
+            } catch (err) {
+                alert("❌ Помилка мережі: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Надіслати звіт";
+            }
         }
 
         // Initialize First Mission

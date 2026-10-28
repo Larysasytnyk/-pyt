@@ -221,7 +221,7 @@
                 desc: "Вам доручено налаштувати моніторинг температури серверної кімнати school_server. Програма має зчитувати значення температури в градусах Цельсія (°C) та виводити еквівалент у Фаренгейтах (°F) за формулою: <b>F = C * 1.8 + 32</b>.",
                 inputDesc: "Одне число (температура °C), наприклад: 25",
                 outputDesc: "Число градусів у Фаренгейтах, наприклад: 77.0",
-                template: "# Місія 1: Конвертер температури\ncelsius = float(input())\n\n# Напишіть ваш код нижче (обчисліть fahrenheit):\n\nprint(fahrenheit)",
+                template: "# Місія 1: Конвертер температури для сервера\ncelsius = float(input())\n\n# Обчисліть fahrenheit за формулою:\nfahrenheit = celsius * 1.8 + 32\n\nprint(fahrenheit)",
                 hint: "Для перетворення типів використовуйте float(input()). Формула для розрахунку: fahrenheit = celsius * 1.8 + 32",
                 tests: [
                     { inputs: ["0"], expected: "32.0" },
@@ -238,7 +238,7 @@
                 desc: "Напишіть систему розпізнавання допуску. На вхід подається вік користувача та наявність спец-ключа (True/False). Доступ надається (вивести <b>'ACCESS GRANTED'</b>), якщо вік не менше 14 років І спец-ключ дорівнює 'True'. В іншому випадку вивести <b>'ACCESS DENIED'</b>.",
                 inputDesc: "Рядок 1: Вік (число). Рядок 2: Ключ ('True' або 'False')",
                 outputDesc: "'ACCESS GRANTED' або 'ACCESS DENIED'",
-                template: "# Місія 2: Система контролю допуску\nage = int(input())\nhas_key = input().strip()\n\n# Напишіть умовну конструкцію:\n",
+                template: "# Місія 2: Система контролю допуску\nage = int(input())\nhas_key = input().strip()\n\n# Напишіть умовну конструкцію:\nif age >= 14 and has_key == 'True':\n    print('ACCESS GRANTED')\nelse:\n    print('ACCESS DENIED')",
                 hint: "Використовуйте `if age >= 14 and has_key == 'True':` для перевірки двох умов одночасно.",
                 tests: [
                     { inputs: ["15", "True"], expected: "ACCESS GRANTED" },
@@ -255,7 +255,7 @@
                 desc: "Телескоп зібрав серію вимірювань щільності зоряного пилу (кількість чисел подається першим рядком N, далі N чисел). Потрібно знайти <b>суму всіх парних вимірювань</b> та вивести її.",
                 inputDesc: "Кількість елементів N, після чого N чисел (по одному в рядку)",
                 outputDesc: "Сума лише парних чисел",
-                template: "# Місія 3: Сума парних вимірювань\nn = int(input())\ntotal_even = 0\n\n# Напишіть цикл для зчитування n чисел та підсумовування парних:\n\n\nprint(total_even)",
+                template: "# Місія 3: Сума парних вимірювань\nn = int(input())\ntotal_even = 0\n\n# Напишіть цикл для зчитування n чисел та підсумовування парних:\nfor _ in range(n):\n    val = int(input())\n    if val % 2 == 0:\n        total_even += val\n\nprint(total_even)",
                 hint: "Використовуйте `for _ in range(n):` для циклу та перевірку `val % 2 == 0` для парності.",
                 tests: [
                     { inputs: ["4", "2", "5", "8", "3"], expected: "10" },
@@ -272,7 +272,7 @@
                 desc: "Отримано список предметів вантажного відсіку (рядки через кому). Програма має сформувати та вивести відсортований за алфавітом список без дублікатів у форматі: <b>Предмети: item1, item2, ...</b>",
                 inputDesc: "Рядок елементів через кому, наприклад: 'water,food,water,tools'",
                 outputDesc: "'Предмети: food, tools, water'",
-                template: "# Місія 4: Оптимізація інвентарю\nitems_raw = input()\n\n# 1. Розбийте рядок на список (split)\n# 2. Видаліть дублікати (set або unique)\n# 3. Відсортуйте за алфавітом (sorted)\n# 4. Виведіть у потрібному форматі\n",
+                template: "# Місія 4: Оптимізація інвентарю\nitems_raw = input()\n\n# Опрацюйте список, видаліть дублікати, відсортуйте та виведіть:\nitems = sorted(list(set(items_raw.split(','))))\nprint('Предмети: ' + ', '.join(items))",
                 hint: "Використовуйте `set(items_raw.split(','))` для видалення дублікатів та `sorted()` для сортування. Об'єднати можна через `', '.join(...)`.",
                 tests: [
                     { inputs: ["water,food,water,tools"], expected: "Предмети: food, tools, water" },
@@ -288,7 +288,7 @@
                 desc: "Створіть функцію <b>encrypt(text, shift)</b>, яка зміщує кожен символ рядка text на shift позицій вперед у таблиці Юнікод (`ord()` та `chr()`). Програма зчитує рядок та число зміщення і виводить зашифрований текст.",
                 inputDesc: "Рядок 1: Текст. Рядок 2: Число зміщення (shift)",
                 outputDesc: "Зашифрований рядок",
-                template: "# Місія 5: Шифр Цезаря\ndef encrypt(text, shift):\n    result = ''\n    # Ваш код функції тут:\n    return result\n\nuser_text = input()\nuser_shift = int(input())\nprint(encrypt(user_text, user_shift))",
+                template: "# Місія 5: Шифр Цезаря\ndef encrypt(text, shift):\n    result = ''\n    for c in text:\n        result += chr(ord(c) + shift)\n    return result\n\nuser_text = input()\nuser_shift = int(input())\nprint(encrypt(user_text, user_shift))",
                 hint: "Для кожного символу c у тексті: `chr(ord(c) + shift)`.",
                 tests: [
                     { inputs: ["abc", "1"], expected: "bcd" },
@@ -325,7 +325,7 @@
             try {
                 pyodide = await loadPyodide();
                 const status = document.getElementById('py-status');
-                status.className = "flex items-center space-x-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold";
+                status.className = "flex items-center space-x-2 bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-3 py-1.5 rounded-lg text-xs font-semibold";
                 status.innerHTML = `<i class="fa-solid fa-check text-emerald-400"></i><span>Python Готовий</span>`;
                 
                 document.getElementById('run-btn').disabled = false;
@@ -439,7 +439,6 @@
 
             const userCode = editor.getValue();
 
-            // Override input() to prompt browser dialogs
             const wrapperCode = `
 import sys
 
@@ -460,7 +459,6 @@ except Exception as e:
 `;
 
             try {
-                // Setup stdout capture
                 pyodide.runPython(`
 import sys
 import io
